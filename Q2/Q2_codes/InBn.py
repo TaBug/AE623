@@ -11,7 +11,7 @@ Elem = []
 Bedge = []
 Iedge = []
 
-for line in open('Nodec.txt', 'r'):
+for line in open('nodco.txt', 'r'):
     N = line.strip().split()
     N[0] = float(N[0])
     N[1] = float(N[1])
@@ -55,7 +55,7 @@ In=[]
 for i in range(len(Iedge)):
     P1 = Node[int(Iedge[i][0])-1]
     P2 = Node[int(Iedge[i][1])-1]
-    n = norm(P1,P2)
+    n = norm(P2,P1)
     In.append(n)
 
 Bn=[]
@@ -74,4 +74,6 @@ for i in range(len(Elem)):
     A = get_area(P1,P2,P3)
     Area.append(A)
       
-  
+ 
+    
+ 

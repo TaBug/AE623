@@ -34,7 +34,7 @@ for elem = 1:nelem
       oldoppositenode = HH(n1,n2);
       if (oldelem < 0), error 'Mesh input error'; end
       niedge = niedge+1;
-      IE(niedge,:) = [n1,n2, oldelem, elem];
+      IE(niedge,:) = [n2,n1, oldelem, elem];
       I2E(niedge,:) = [oldelem, oldoppositenode, elem, oppositenode];
       H(n1,n2) = -1;  H(n2,n1) = -1;
       HH(n1,n2) = -1;  HH(n2,n1) = -1;
@@ -81,5 +81,5 @@ for b = 1:size(I,1)
     BE(b, 2) = HH(I(b),J(b));
 end
 B2E = BE;
-save("B2E.txt","B2E",'-ascii')
-save("I2E.txt","I2E",'-ascii')
+% save("B2E.txt","B2E",'-ascii')
+% save("I2E.txt","I2E",'-ascii')
