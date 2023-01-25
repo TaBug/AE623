@@ -17,7 +17,11 @@ def area(eles, nodes):
 def main():
     eles = np.loadtxt('NE.txt')
     nodes = np.loadtxt('nodco.txt')
-    Area = np.save('Area.npy', area(eles, nodes))
+    areas = area(eles, nodes)
+    areas = np.reshape(areas, [len(areas), 1])
+    with open('../../Q4/Area.txt', 'w') as f:
+        for line in areas:
+            np.savetxt(f, line)
 
 
 if __name__ == "__main__":
