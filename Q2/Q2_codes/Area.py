@@ -1,6 +1,4 @@
 import numpy as np
-from scipy import sparse
-from scipy.sparse import linalg
 
 
 # input: element matrix, node coordinate matrix
@@ -18,8 +16,12 @@ def area(eles, nodes):
 
 def main():
     eles = np.loadtxt('NE.txt')
-    nodes = np.loadtxt('Nodec.txt')
+    nodes = np.loadtxt('nodco.txt')
     areas = area(eles, nodes)
+    areas = np.reshape(areas, [len(areas), 1])
+    with open('../../Q4/Area.txt', 'w') as f:
+        for line in areas:
+            np.savetxt(f, line)
 
 
 if __name__ == "__main__":

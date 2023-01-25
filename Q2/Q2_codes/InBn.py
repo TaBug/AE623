@@ -85,9 +85,6 @@ for i in range(len(Elem)):
     P3 = Node[Elem[i][2]-1]
     A = get_area(P1,P2,P3)
     Area.append(A)
-      
-np.save("In", In)
-np.save("Bn", In)
-np.save("A", A)
+
     
  
