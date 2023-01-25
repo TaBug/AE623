@@ -25,7 +25,7 @@ for line in open('nodco.txt', 'r'):
 for line in open('NE.txt', 'r'):
     
 # Element to node of test mesh
-# for line in open('E2N.txt', 'r'):   
+# for line in open('E2N_test.txt', 'r'):
     E = line.strip().split()
     E[0] = int(E[0])
     E[1] = int(E[1])
