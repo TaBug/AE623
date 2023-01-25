@@ -87,4 +87,6 @@ for i in range(len(Elem)):
     Area.append(A)
 
     
- 
+np.save("In", In)
+np.save("Bn", In)
+np.save("A", A)
