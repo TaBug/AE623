@@ -5,13 +5,6 @@ fid = fopen("NE.txt", 'r');
 E2N = fscanf(fid,'%d',[3 nelem]);
 E2N = E2N';
 
-% fid = fopen("E2N.txt", 'r');
-% [A,nelem] = fscanf(fid,'%d');
-% nelem = nelem/3;
-% fid = fopen("E2N.txt", 'r');
-% E2N = fscanf(fid,'%d',[3 nelem]);
-% E2N = E2N';
-
 % fid = fopen("square_E2N.txt", 'r');
 % [A,nelem] = fscanf(fid,'%d');
 % nelem = nelem/3;
@@ -52,7 +45,7 @@ end
 IE = IE(1:niedge,:);  
 I2E = I2E(1:niedge,:); % clip I2E
 
-% B2E:
+
 [I,J] = find(triu(H)>0);  
 BE = [I, J, zeros(size(I))];
 
@@ -89,18 +82,7 @@ for b = 1:size(I,1)
 end
 B2E = BE;
 B2E2 = BE;
-
-% BE:
-[I,J] = find(triu(H)>0);  
-BE = [I, J, zeros(size(I))];
-for b = 1:size(I,1), BE(b, 3) = H(I(b),J(b)); end;
-
-writematrix(IE,"IE_test.txt")
-% writematrix(IE,"IE_airf.txt")
-writematrix(I2E,"I2E_test.txt")
-% writematrix(I2E,"I2E_airf.txt")
-writematrix(BE,"BE_test.txt")
-% writematrix(BE,"BE_airf.txt")
-writematrix(B2E,"B2E_test.txt")
-% writematrix(B2E,"B2E_airf.txt")
-
+writematrix(I2E)
+% writematrix(B2E2)
+% save("B2E.txt","B2E",'-ascii')
+% save("I2E.txt","I2E",'-ascii')

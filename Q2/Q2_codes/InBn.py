@@ -11,25 +11,35 @@ Elem = []
 Bedge = []
 Iedge = []
 
+# Coordinate of wing mesh
 for line in open('nodco.txt', 'r'):
+    
+# Coordinate of test mesh    
+# for line in open('nodco_test.txt', 'r'): 
     N = line.strip().split()
     N[0] = float(N[0])
     N[1] = float(N[1])
     Node.append(N)
     
+# Element to node of wing mesh    
 for line in open('NE.txt', 'r'):
+    
+# Element to node of test mesh
+# for line in open('E2N.txt', 'r'):   
     E = line.strip().split()
     E[0] = int(E[0])
     E[1] = int(E[1])
     E[2] = int(E[2])
     Elem.append(E)    
     
-for line in open('IE.txt', 'r'):
-    I = line.strip().split()
+for line in open('IE_airf.txt', 'r'):
+# for line in open('IE_test.txt', 'r'):
+    I = line.strip().split(",")
     Iedge.append(I)    
     
 for line in open('BE.txt', 'r'):
-    B = line.strip().split()
+# for line in open('BE_test.txt', 'r'):
+    B = line.strip().split(",")
     Bedge.append(B)    
 
 def lenth(P1,P2):
@@ -53,6 +63,8 @@ def get_area(P1,P2,P3):
 
 In=[]
 for i in range(len(Iedge)):
+    # P1 = Node[Iedge[i][0]-1]
+    # P2 = Node[Iedge[i][1]-1]
     P1 = Node[int(Iedge[i][0])-1]
     P2 = Node[int(Iedge[i][1])-1]
     n = norm(P2,P1)
@@ -74,6 +86,8 @@ for i in range(len(Elem)):
     A = get_area(P1,P2,P3)
     Area.append(A)
       
- 
+np.save("In", In)
+np.save("Bn", In)
+np.save("A", A)
     
  
