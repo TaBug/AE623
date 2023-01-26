@@ -30,55 +30,50 @@ def localRefine(x, y, r):
         if eleFlagged[i2e[0] - 1] == 1 or eleFlagged[i2e[2] - 1] == 1:
             edgeFlagged[iEdge] += 1
 
-    eleRefine = np.zeros(len(NE), dtype=int)
+    eleRefine = np.zeros([len(NE), 3], dtype=int)
     for iEdge, i2e in enumerate(I2E):
         if edgeFlagged[iEdge] == 1:
-            iEleL = i2e[0] - 1
-            iEleR = i2e[2] - 1
-            eleRefine[iEleL] += 1
-            eleRefine[iEleR] += 1
+            elemL = i2e[0]
+            faceL = i2e[1]
+            elemR = i2e[2]
+            faceR = i2e[3]
+            eleRefine[elemL - 1][faceL - 1] += 1
+            eleRefine[elemR - 1][faceR - 1] += 1
 
     counter = len(meshNodes) + 1
-    for iEdge, edge in enumerate(edgeFlagged):
-        if edge == 1:
-            elemL = I2E[iEdge][0]
-            faceL = I2E[iEdge][1]
-            elemR = I2E[iEdge][2]
-            faceR = I2E[iEdge][3]
-            if eleRefine[elemL - 1] == 1:
-                ne = NE[elemL - 1]
-                node1 = ne[faceL - 1]
-                node2 = ne[faceL - 3]
-                node3 = ne[faceL - 2]
-                coordNew = np.array([[(meshNodes[node3-1][0] + meshNodes[node2-1][0])/2, (meshNodes[node3-1][1] + meshNodes[node2-1][1])/2]])
-                elemNew1 = np.array([[counter, node1, node2]])
-                elemNew2 = np.array([[counter, node3, node1]])
-                NEcopy = np.append(NEcopy, elemNew1, axis=0)
-                NEcopy = np.append(NEcopy, elemNew2, axis=0)
-                NEcopy = np.delete(NEcopy, elemL - 1, 0)
-                meshNodesCopy = np.append(meshNodesCopy, coordNew, axis=0)
-            elif eleRefine[elemL - 1] == 2:
-                elemL = I2E[iEdge][0]
-                faceL = I2E[iEdge][1]
-                elemR = I2E[iEdge][2]
-                faceR = I2E[iEdge][3]
-                if eleRefine[elemL - 1] == 1:
-                    ne = NE[elemL - 1]
-                    elemNew1 = np.array([[counter, ne[faceL - 3], ne[faceL - 2]]])
-                    elemNew2 = np.array([[counter, ne[faceL - 2], ne[faceL - 1]]])
-                    NEcopy = np.append(NEcopy, elemNew1, axis=0)
-                    NEcopy = np.append(NEcopy, elemNew2, axis=0)
-                    NEcopy = np.delete(NEcopy, elemL - 1, 0)
-            if eleRefine[elemR - 1] == 1:
-                ne = NE[elemR - 1]
-                elemNew1 = np.array([[counter, ne[faceL - 3], ne[faceL - 2]]])
-                elemNew2 = np.array([[counter, ne[faceL - 2], ne[faceL - 1]]])
-                NEcopy = np.append(NEcopy, elemNew1, axis=0)
-                NEcopy = np.append(NEcopy, elemNew2, axis=0)
-                NEcopy = np.delete(NEcopy, elemL - 1, 0)
+    for iElem, elem in enumerate(eleRefine):
+        index = np.where(elem == 1)
+        if len(index) == 1:
+            node1 = NE[iElem][index - 1]
+            node2 = NE[iElem][index - 3]
+            node3 = NE[iElem][index - 2]
+
+            coordNew = np.array([[(meshNodes[node3 - 1][0] + meshNodes[node2 - 1][0]) / 2,
+                                  (meshNodes[node3 - 1][1] + meshNodes[node2 - 1][1]) / 2]])
+            meshNodesCopy = np.append(meshNodesCopy, coordNew, axis=0)
+
+            elemNew1 = np.array([[counter, node1, node2]])
+            elemNew2 = np.array([[counter, node3, node1]])
+            NEcopy = np.append(NEcopy, elemNew1, axis=0)
+            NEcopy = np.append(NEcopy, elemNew2, axis=0)
+            NEcopy = np.delete(NEcopy, iElem, 0)
+        elif len(index) == 2:
+            elemNew1 = np.array([[counter, ne[faceL - 3], ne[faceL - 2]]])
+            elemNew2 = np.array([[counter, ne[faceL - 2], ne[faceL - 1]]])
+            NEcopy = np.append(NEcopy, elemNew1, axis=0)
+            NEcopy = np.append(NEcopy, elemNew2, axis=0)
+            NEcopy = np.delete(NEcopy, elemL - 1, 0)
+        if eleRefine[elemR - 1] == 1:
+            ne = NE[elemR - 1]
+            elemNew1 = np.array([[counter, ne[faceL - 3], ne[faceL - 2]]])
+            elemNew2 = np.array([[counter, ne[faceL - 2], ne[faceL - 1]]])
+            NEcopy = np.append(NEcopy, elemNew1, axis=0)
+            NEcopy = np.append(NEcopy, elemNew2, axis=0)
+            NEcopy = np.delete(NEcopy, elemL - 1, 0)
 
     np.savetxt("NERefined.txt", NEcopy, delimiter=" ")
     np.savetxt("nodco.txt", meshNodesCopy, delimiter=" ")
+
 
 def main():
     x = -.01
