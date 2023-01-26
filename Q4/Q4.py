@@ -3,8 +3,8 @@ from pathlib import Path
 
 I2E = np.loadtxt('../Q2/Q2_results/I2E.txt', dtype=int)
 B2E = np.loadtxt('../Q2/Q2_results/B2E.txt', dtype=int)
-In = np.loadtxt('../Q2/Q2_results/In.txt')
-Bn = np.loadtxt('../Q2/Q2_results/Bn.txt')
+In = np.load('../Q2/Q2_results/In.npy')
+Bn = np.load('../Q2/Q2_results/Bn.npy')
 Area = np.loadtxt('../Q2/Q2_results/Area.txt')
 E2N = np.loadtxt('../Q2/Q2_results/E2N.txt', dtype=int)
 IE = np.loadtxt('../Q2/Q2_results/IE.txt', dtype=int)
@@ -17,16 +17,19 @@ meshNodes = np.loadtxt('../foil_coord/nodco.txt')
 
 
 def localRefine(x, y, r):
-    eleFlagged = np.array([])
-    edgeFlagged = np.array([])
-    for i in range(len(NE)):
-        xc = (meshNodes[NE[i][0] - 1][0] + meshNodes[NE[i][1] - 1][0] + meshNodes[NE[i][1] - 1][0]) / 3
-        yc = (meshNodes[NE[i][0] - 1][1] + meshNodes[NE[i][1] - 1][1] + meshNodes[NE[i][1] - 1][1]) / 3
-        if np.sqrt((xc - x)**2 + (yc - y)**2) <= r:
-            np.append(eleFlagged, i)
+    eleFlagged = np.zeros(len(NE))
+    edgeFlagged = np.zeros(len(I2E))
+    for iEle in range(len(NE)):
+        xc = (meshNodes[NE[iEle][0] - 1][0] + meshNodes[NE[iEle][1] - 1][0] + meshNodes[NE[iEle][1] - 1][0]) / 3
+        yc = (meshNodes[NE[iEle][0] - 1][1] + meshNodes[NE[iEle][1] - 1][1] + meshNodes[NE[iEle][1] - 1][1]) / 3
+        if np.sqrt((xc - x) ** 2 + (yc - y) ** 2) <= r:
+            eleFlagged[iEle] += 1
 
-    for i in I2E:
+    for iEdge, i2e in I2E:
+        if eleFlagged[i2e[0]] == 1 or eleFlagged[i2e[2]] == 1:
+            edgeFlagged[iEdge] += 1
 
+    for
 
 def main():
     x = -.01
