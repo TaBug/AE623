@@ -25,29 +25,39 @@ with open("../Q1/all.geo", "w") as f:
 
     # Write the instructions for connecting the nodes to form a triangular mesh
     counter = 0
-    for i in range(0, len(main) - 1, 4):
-        f.write(f"Line({counter+1}) = {{{i+1}, {i+2}}};\n")
+    resFactor = 5
+    for i in range(0, len(main) - 1, resFactor):
+        f.write(f"Line({counter+1}) = {{{i+1}, {i+resFactor+1}}};\n")
         counter += 1
-    for i in range(0, len(flap) - 1, 4):
+        i -= 1
+    for i in range(0, len(flap) - 1, resFactor):
         index = i + len(main)
-        f.write(f"Line({counter+1}) = {{{index+1}, {index+2}}};\n")
+        f.write(f"Line({counter+1}) = {{{index+1}, {index+resFactor+1}}};\n")
         counter += 1
-    for i in range(0, len(slat) - 1, 4):
+        i -= 1
+    for i in range(0, len(slat) - 1, resFactor):
         index = i + len(main) + len(flap)
-        f.write(f"Line({counter+1}) = {{{index+1}, {index+2}}};\n")
+        f.write(f"Line({counter+1}) = {{{index+1}, {index+resFactor+1}}};\n")
         counter += 1
+        i -= 1
 
-    boxSize = 200
-    Nnodes = len(main) + len(flap) + len(slat) - 3
-    f.write(f"Point({Nnodes + 1}) = {{{-boxSize/2}, {-boxSize/2}, 0}};\n")
-    f.write(f"Point({Nnodes + 2}) = {{{boxSize/2}, {-boxSize/2}, 0}};\n")
-    f.write(f"Point({Nnodes + 3}) = {{{boxSize/2}, {boxSize/2}, 0}};\n")
-    f.write(f"Point({Nnodes + 4}) = {{{-boxSize/2}, {boxSize/2}, 0}};\n")
+    boxSize = 100
+    Nnodes = len(main) + len(flap) + len(slat)
+    f.write(f"Point({Nnodes + 1}) = {{{-boxSize}, {-boxSize}, 0}};\n")
+    f.write(f"Point({Nnodes + 2}) = {{{boxSize}, {-boxSize}, 0}};\n")
+    f.write(f"Point({Nnodes + 3}) = {{{boxSize}, {boxSize}, 0}};\n")
+    f.write(f"Point({Nnodes + 4}) = {{{-boxSize}, {boxSize}, 0}};\n")
 
     f.write(f"Line({counter + 1}) = {{{Nnodes + 1}, {Nnodes + 2}}};\n")
     f.write(f"Line({counter + 2}) = {{{Nnodes + 2}, {Nnodes + 3}}};\n")
     f.write(f"Line({counter + 3}) = {{{Nnodes + 3}, {Nnodes + 4}}};\n")
     f.write(f"Line({counter + 4}) = {{{Nnodes + 4}, {Nnodes + 1}}};\n")
     # Create a physical group for the elements of the mesh
-    f.write(f"Line Loop(1) = {1:{counter}};\n")
-    f.write("Plane Surface(1) = {1};\n")
+    f.write(f"Line Loop(1) = {{1:{counter}}};\n")
+    f.write(f"Line Loop(2) = {{{counter+1}:{counter+4}}};\n")
+    f.write("Plane Surface(1) = {1, 2};\n")
+
+    f.write("Physical Surface(1) = {1};\n")
+    f.write("Mesh 2;")
+
+    f.close()
