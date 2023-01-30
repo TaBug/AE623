@@ -15,9 +15,12 @@ def msh2gri(fnameInput, fnameOutput):
     with open(fnameOutput, "w") as f:
         iEntities = lines.index('$Entities\n')
         numPoints, numCurves, numSurfaces, numVolumes = map(int, lines[iEntities + 1].strip().split())
-        print(numPoints, numCurves, numSurfaces, numVolumes)
         iNodes = lines.index('$Nodes\n')
         numEntityBlocks, numNodes, minNodeTag, maxNodeTag = map(int, lines[iNodes + 1].strip().split())
+        iElements = lines.index('$Elements\n')
+
+        f.write('             ')
+        # Node coordinates
         index = iNodes + 2
         for i in range(numPoints + numCurves + numSurfaces):
             entityDim, entityTag, parametric, numNodesInBlock = map(int, lines[index].strip().split())
@@ -28,31 +31,33 @@ def msh2gri(fnameInput, fnameOutput):
                 f.write(f"{x} {y}\n")
             index += 1
 
-        # x y z coordinates
-        for i, line in enumerate(lines):
-            x, y, trash1, trash2 = map(float, line.strip().split())
-            f.write(f"{x} {y}\n")
-
         # Boundaries
-        f.write(f"4\n")
-        f.write(f"1 2 Bottom\n")
-        f.write(f"121 122\n")
-        f.write(f"1 2 Right\n")
-        f.write(f"122 123\n")
-        f.write(f"1 2 Top\n")
-        f.write(f"123 124\n")
-        f.write(f"1 2 Left\n")
-        f.write(f"124 121\n")
+        nBGroup = numCurves
+        f.write(f'{nBGroup}\n')
+        index = iElements + 2 + numPoints * 2
+        for i in range(numCurves):
+            entityDim, entityTag, elementType, numElementsInBlock = map(int, lines[index].strip().split())
+            f.write(f"{numElementsInBlock} 1 Boundary{i+1}\n")
+            for j in range(numElementsInBlock):
+                index += 1
+                elementTag, node1, node2 = map(int, lines[index].strip().split())
+                f.write(f"{node1} {node2}\n")
+            index += 1
 
-        # Node to Elements
-        f.write(f"1288 1 TriLagrange\n")
-        for i, line in enumerate(nodes):
-            x, y, z, trash2 = map(float, line.strip().split())
+        # Elements
+        nElemGroup = 1
+        for elemGroup in range(nElemGroup):
+            entityDim, entityTag, elementType, numElementsInBlock = map(int, lines[index].strip().split())
+            f.write(f"{numElementsInBlock} 1 TriLagrange\n")
+            for i in range(numElementsInBlock):
+                index += 1
+                elementTag, node1, node2, node3 = map(int, lines[index].strip().split())
+                f.write(f"{node1} {node2} {node3}\n")
 
-            x = int(x);
-            y = int(y);
-            z = int(z)
-            f.write(f"{x} {y} {z}\n")
+        string = f"{numNodes} {numElementsInBlock} 2\n"
+        f.seek(0, 0)
+        f.write(string)
+        f.close()
 
 
 if __name__ == "__main__":

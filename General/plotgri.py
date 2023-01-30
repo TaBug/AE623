@@ -25,6 +25,7 @@ def readgri(fname):
         s = f.readline().split();
         ne = int(s[0])
         Ei = np.array([[int(s) - 1 for s in f.readline().split()] for n in range(ne)])
+        print(s, E, Ei)
         E = Ei if (Ne0 == 0) else np.concatenate((E, Ei), axis=0)
         Ne0 += ne
     f.close()
