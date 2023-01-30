@@ -2,8 +2,8 @@ import numpy as np
 
 I2E = np.loadtxt('../Q2/Q2_results/I2E.txt', dtype=int)
 B2E = np.loadtxt('../Q2/Q2_results/B2E.txt', dtype=int)
-In = np.load('../Q2/Q2_results/In.npy')
-Bn = np.load('../Q2/Q2_results/Bn.npy')
+In = np.load('../Q2/In.npy')
+Bn = np.load('../Q2/Bn.npy')
 Area = np.loadtxt('../Q2/Q2_results/Area.txt')
 # E2N = np.loadtxt('../Q2/Q2_results/E2N.txt', dtype=int)
 # IE = np.loadtxt('../Q2/Q2_codes/IE.txt', dtype=int)

@@ -39,14 +39,15 @@ def txt2geo():
             f.write(f"Line({counter}) = {{{index}, {index + resFactor}}};\n")
             counter += 1
             i -= 1
-        f.write(f"Line({counter}) = {{{len(main) + len(flap) - resFactor}, {len(main)+1}}};\n")
+        f.write(f"Line({counter}) = {{{len(main) + len(flap) - resFactor}, {len(main) + 1}}};\n")
         counter += 1
         for i in range(1, len(slat) - resFactor, resFactor):
             index = i + len(main) + len(flap)
             f.write(f"Line({counter}) = {{{index}, {index + resFactor}}};\n")
             counter += 1
             i -= 1
-        f.write(f"Line({counter}) = {{{len(main) + len(flap) + len(slat) - resFactor}, {len(main) + len(slat) + 1}}};\n")
+        f.write(
+            f"Line({counter}) = {{{len(main) + len(flap) + len(slat) - resFactor}, {len(main) + len(slat) + 1}}};\n")
 
         boxSize = 100
         Nnodes = len(main) + len(flap) + len(slat)
@@ -64,8 +65,8 @@ def txt2geo():
         f.write(f"Line Loop(2) = {{{counter + 1}:{counter + 4}}};\n")
         f.write("Plane Surface(1) = {1, 2};\n")
 
-        f.write(f"Mesh.MeshSizeFactor  = {1.5};\n")
-        f.write(f"Mesh.AnisoMax = {5};\n")
+        f.write(f"Mesh.MeshSizeFactor  = {1};\n")
+        f.write(f"Mesh.Algorithm  = 5;\n")  # 2D mesh algorithm
         f.write("Mesh 2;")
 
         f.close()

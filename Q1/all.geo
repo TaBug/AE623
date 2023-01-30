@@ -732,6 +732,6 @@ Line(124) = {607, 604};
 Line Loop(1) = {1:120};
 Line Loop(2) = {121:124};
 Plane Surface(1) = {1, 2};
-Mesh.MeshSizeFactor  = 1.5;
-Mesh.AnisoMax = 5;
+Mesh.MeshSizeFactor  = 1;
+Mesh.Algorithm  = 5;
 Mesh 2;
