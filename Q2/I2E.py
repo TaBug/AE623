@@ -17,18 +17,18 @@ def I2E(fnameInput, fnameOutput):
 
         nBGroup = int(lines[index])
         index += 1
-        NB = np.array([[]])
+        NB = np.array([[]], dtype=int)
         for i in range(nBGroup):
             nBFace, nf = map(int, lines[index].strip().split()[:2])
             index += 1
             for j in range(nBFace):
                 if np.size(NB) == 0:
-                    NB = np.array([map(int, lines[index].strip().split())])
+                    NB = np.array([[int(num) for i, num in enumerate(lines[index].strip().split())]], dtype=int)
                 else:
-                    NB = np.concatenate((NB, np.array([map(int, lines[index].strip().split())])), axis=0)
+                    NB = np.concatenate((NB, np.array([[int(num) for i, num in enumerate(lines[index].strip().split())]], dtype=int)), axis=0)
                 index += 1
 
-        NE = np.zeros((nElemTot, 3))
+        NE = np.zeros((nElemTot, 3), dtype=int)
         iStart = index + 1
 
         while index <= len(lines) - 1:
@@ -39,26 +39,43 @@ def I2E(fnameInput, fnameOutput):
                 index += 1
 
     with open(fnameOutput, 'w') as f:
-        elemLs = np.array([])
-        faceLs = np.array([])
-        elemRs = np.array([])
-        faceRs = np.array([])
-        for i, elem in enumerate(NE):
+        elemLs = np.array([], dtype=int)
+        faceLs = np.array([], dtype=int)
+        elemRs = np.array([], dtype=int)
+        faceRs = np.array([], dtype=int)
+        faces = np.array([[NE[0][0], NE[0][1]], [NE[0][1], NE[0][2]], [NE[0][2], NE[0][0]]])
+
+        for e in range(3):
+            elemLs = np.append(elemLs, 1)
+            elemRs = np.append(elemRs, 0)
+            faceLs = np.append(faceLs, e + 1)
+            faceRs = np.append(faceRs, 0)
+
+        for i, elem in enumerate(NE[1:]):
             for e in range(3):
-                if i in elemLs:
-                    iElem = np.where(elemLs == i)
-                    print(iElem)
-                    elemRs[iElem] = i + 1
-                    faceRs[iElem] = e + 1
+                if e == 2:
+                    ePlus = 0
+                else:
+                    ePlus = e + 1
+
+                newFace = np.array([[elem[e], elem[ePlus]]])
+                if np.isin(NB, newFace).all(axis=1).any():
+                    continue
+
+                isin = np.isin(faces, np.array([[elem[ePlus], elem[e]]])).all(axis=1)
+                if isin.any():
+                    iFace = np.where(isin)
+                    elemRs[iFace] = i + 1
+                    faceRs[iFace] = e + 1
                 else:
                     elemLs = np.append(elemLs, i + 1)
                     elemRs = np.append(elemRs, 0)
                     faceLs = np.append(faceLs, e + 1)
                     faceRs = np.append(faceRs, 0)
+                    faces = np.concatenate((faces, newFace), axis=0)
 
         for i in range(len(elemLs)):
             f.write(f'{int(elemLs[i])} {int(faceLs[i])} {int(elemRs[i])} {int(faceRs[i])}\n')
-
         f.close()
 
 
