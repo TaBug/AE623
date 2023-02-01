@@ -30,7 +30,6 @@ def I2E(fnameInput, fnameOutput):
 
         NE = np.zeros((nElemTot, 3), dtype=int)
         iStart = index + 1
-
         while index <= len(lines) - 1:
             nElem = int(lines[index].strip().split()[0])
             index += 1
