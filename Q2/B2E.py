@@ -44,7 +44,6 @@ def B2E(fnameInput, fnameOutput):
                 face = np.array([ne[e], ne[ePlus]])
 
                 isin = np.isin(NB, face).all(axis=1)
-                print(isin.any(), e)
                 if isin.any():
                     iface = np.where(isin)
                     elems[iface] = i + 1
