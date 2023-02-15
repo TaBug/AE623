@@ -1,7 +1,7 @@
 import numpy as np
 from txt2geo import txt2geo
 from msh2gri import msh2gri
-from matricesGenerator import I2E
+from matricesGenerator import I2E, B2E, edgehash, area
 
 
 def main():
