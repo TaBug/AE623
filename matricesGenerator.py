@@ -8,21 +8,22 @@ def readgri(fname):
     V = np.array([[float(s) for s in f.readline().split()] for n in range(Nn)])
     # read boundaries
     NB = int(f.readline())
-    B = []
-    Bname = []
+    B = np.array([[]])
+    Bname = np.array([])
     for i in range(NB):
         s = f.readline().split()
         Nb = int(s[0])
-        Bname.append(s[2])
-        Bi = np.array([[int(s) - 1 for s in f.readline().split()] for n in range(Nb)])
-        B.append(Bi)
+        Bname = np.append(Bname, [i for s in range(Nb)])
+        Bi = np.array([[int(s) for s in f.readline().split()] for n in range(Nb)])
+        B = Bi if (B.size == 0) else np.append(B, Bi, axis=0)
+
     # read elements
     Ne0 = 0
-    E = []
-    while (Ne0 < Ne):
+    E = np.array([[]])
+    while Ne0 < Ne:
         s = f.readline().split()
         ne = int(s[0])
-        Ei = np.array([[int(s) - 1 for s in f.readline().split()] for n in range(ne)])
+        Ei = np.array([[int(s) for s in f.readline().split()] for n in range(ne)])
         E = Ei if (Ne0 == 0) else np.concatenate((E, Ei), axis=0)
         Ne0 += ne
     f.close()
@@ -30,17 +31,13 @@ def readgri(fname):
     return V, E, B, Bname
 
 
-def I2E(fnameInput):
+def getI2E(fnameInput, fnameOutput):
     nodes, NE, NB, NBName = readgri(fnameInput)
-
-    elemLs = []
-    faceLs = []
-    elemRs = []
-    faceRs = []
-    faces = []
-
-    with open('I2E.txt', 'w') as f:
-        for i, elem in enumerate(NE[1:]):
+    print(NB, NB.shape)
+    output = np.array([[]])
+    faces = np.array([[]])
+    with open(fnameOutput, 'w') as f:
+        for i, elem in enumerate(NE):
             for e in range(3):
                 if e == 0:
                     node1 = 1
@@ -53,54 +50,64 @@ def I2E(fnameInput):
                     node2 = 2
 
                 newFace = np.array([[elem[node1], elem[node2]]])
-                if np.isin(NB, newFace).all(axis=1)
+                if np.isin(NB, newFace).all(axis=1).any():
+                    print(np.isin(NB, newFace).all(axis=1))
                     continue
 
-                isin = np.isin(faces, newFace).all(axis=1)
-                if isin.any():
-                    iFace = np.where(isin)
-                    elemRs[iFace] = i + 1
-                    faceRs[iFace] = e + 1
+                if faces.size == 0:
+                    faces = newFace
+                    output = np.array([[i + 1, e + 1, 0, 0]])
                 else:
-                    elemLs.append(i + 1)
-                    elemRs.append(0)
-                    faceLs.append(e + 1)
-                    faceRs.append(0)
-                    faces.append(newFace)
+                    isin = np.isin(faces, newFace).all(axis=1)
+                    if isin.any():
+                        iFace = np.where(isin)[0][0]
+                        output[iFace][2] = i + 1
+                        output[iFace][3] = e + 1
+                    else:
+                        faces = np.append(faces, newFace, axis=0)
+                        face = np.array([[i + 1, e + 1, 0, 0]])
+                        output = np.append(output, face, axis=0)
 
-        for i in range(len(elemLs)):
-            f.write(f'{int(elemLs[i])} {int(faceLs[i])} {int(elemRs[i])} {int(faceRs[i])}\n')
+        for i in range(len(output)):
+            f.write(f'{int(output[i][0])} {int(output[i][1])} {int(output[i][2])} {int(output[i][3])}\n')
         f.close()
-    return [elemLs, faceLs, elemRs, faceRs]
+    return output
 
-def B2E(fnameInput):
+
+def getB2E(fnameInput):
     nodes, NE, NB, NBName = readgri(fnameInput)
     elems = []
     faces = []
     nBGroups = []
-    for iGroup, bGroup in enumerate(NB):
-        for ib, nb in enumerate(bGroup):
-            iElem = np.where(np.isin(NE, nb).all(axis=1))
-            node1 = nb[0]
-            node2 = nb[1]
-            elem = NE[iElem]
-            inode1 = np.where(elem, node1)
-            inode2 = np.where(elem, node2)
-            iface = 3 - inode1 - inode2;
-            
-            elems.append(elem)
-            faces.append(iface)
-            nBGroups.append(iGroup)
 
+    for ib, nb in enumerate(NB):
+        iElem = np.where(np.isin(NE, nb).all(axis=1))
+        node1 = nb[0]
+        node2 = nb[1]
+        elem = NE[iElem]
+        inode1 = np.where(elem, node1)
+        inode2 = np.where(elem, node2)
+        iface = 3 - inode1 - inode2
+
+        elems.append(elem)
+        faces.append(iface)
+        nBGroups.append(NBName[ib])
+
+    output = np.zeros([len(elems), 3])
     with open('B2E.txt', 'w') as f:
         for i in range(len(elems)):
             f.write(f'{int(elems[i])} {int(faces[i])} {int(nBGroups[i])}\n')
-    return [elems, faces, nBGroups]
+            output[i][0] = elems[i]
+            output[i][1] = faces[i]
+            output[i][2] = nBGroups[i]
+        f.close()
+    return output
 
-def edgehash(fnameInput):
+
+def edgehash(fnameInput, fnameOutput):
     nodes, NE, NB, NBName = readgri(fnameInput)
-    I2E = I2E(fnameInput)
-    B2E = B2E(fnameInput)
+    I2E = getI2E(fnameInput, fnameOutput)
+    B2E = getB2E(fnameInput)
     In = []
     Bn = []
     faces = []
@@ -156,6 +163,7 @@ def edgehash(fnameInput):
 
     return In, Bn, lIn, lBn
 
+
 # input: element matrix, node coordinate matrix
 # output: element area matrix (index = element index)
 def area(fnameInput, fnameOutput):
@@ -167,10 +175,11 @@ def area(fnameInput, fnameOutput):
             coor2 = nodes[int(ne[2]) - 1]
             area = 1 / 2 * (coor0[0] * (coor1[1] - coor2[1]) + coor1[0] * (coor2[1] - coor0[1]) + coor2[0] * (
                     coor0[1] - coor1[1]))
-            f.write(f'area'\n)
+            f.write(f'area\n')
+
 
 def main():
-    I2E('all.gri', 'I2E.txt')
+    getI2E('all.gri', 'I2E.txt')
     # B2E('all.gri', 'B2E.txt')
 
 
