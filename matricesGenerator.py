@@ -8,52 +8,53 @@ def readgri(fname):
     V = np.array([[float(s) for s in f.readline().split()] for n in range(Nn)])
     # read boundaries
     NB = int(f.readline())
-    B = np.array([[]])
-    Bname = np.array([])
+    B = [];
+    Bname = []
     for i in range(NB):
-        s = f.readline().split()
-        Nb = int(s[0])
-        Bname = np.append(Bname, [i for s in range(Nb)])
+        s = f.readline().split();
+        Nb = int(s[0]);
+        Bname.append(s[2])
         Bi = np.array([[int(s) for s in f.readline().split()] for n in range(Nb)])
-        B = Bi if (B.size == 0) else np.append(B, Bi, axis=0)
-
+        B.append(Bi)
     # read elements
-    Ne0 = 0
-    E = np.array([[]])
-    while Ne0 < Ne:
-        s = f.readline().split()
+    Ne0 = 0;
+    E = []
+    while (Ne0 < Ne):
+        s = f.readline().split();
         ne = int(s[0])
         Ei = np.array([[int(s) for s in f.readline().split()] for n in range(ne)])
         E = Ei if (Ne0 == 0) else np.concatenate((E, Ei), axis=0)
         Ne0 += ne
     f.close()
     Mesh = {'V': V, 'E': E, 'B': B, 'Bname': Bname}
-    return V, E, B, Bname
+    return Mesh
 
 
-def getI2E(fnameInput, fnameOutput):
-    nodes, NE, NB, NBName = readgri(fnameInput)
-    print(NB, NB.shape)
+def getI2E(fnameInput, toOutput):
+    Mesh = readgri(fnameInput)
+    E = Mesh['E']
+    B = Mesh['B']
+
     output = np.array([[]])
     faces = np.array([[]])
-    with open(fnameOutput, 'w') as f:
-        for i, elem in enumerate(NE):
-            for e in range(3):
-                if e == 0:
-                    node1 = 1
-                    node2 = 2
-                elif e == 1:
-                    node1 = 2
-                    node2 = 0
-                else:
-                    node1 = 1
-                    node2 = 2
 
-                newFace = np.array([[elem[node1], elem[node2]]])
-                if np.isin(NB, newFace).all(axis=1).any():
-                    print(np.isin(NB, newFace).all(axis=1))
-                    continue
+    for i, elem in enumerate(E):
+        for e in range(3):
+            if e == 0:
+                node1 = 1
+                node2 = 2
+            elif e == 1:
+                node1 = 2
+                node2 = 0
+            else:
+                node1 = 0
+                node2 = 1
 
+            newFace = np.array([[elem[node1], elem[node2]]])
+            for bGroup in B:
+                if np.isin(bGroup, newFace).all(axis=1).any():
+                    break
+            else:
                 if faces.size == 0:
                     faces = newFace
                     output = np.array([[i + 1, e + 1, 0, 0]])
@@ -67,120 +68,152 @@ def getI2E(fnameInput, fnameOutput):
                         faces = np.append(faces, newFace, axis=0)
                         face = np.array([[i + 1, e + 1, 0, 0]])
                         output = np.append(output, face, axis=0)
+                continue
 
-        for i in range(len(output)):
-            f.write(f'{int(output[i][0])} {int(output[i][1])} {int(output[i][2])} {int(output[i][3])}\n')
-        f.close()
+    if toOutput:
+        with open('I2E.txt', 'w') as f:
+            for i in range(len(output)):
+                f.write(f'{int(output[i][0])} {int(output[i][1])} {int(output[i][2])} {int(output[i][3])}\n')
+            f.close()
+
     return output
 
 
-def getB2E(fnameInput):
-    nodes, NE, NB, NBName = readgri(fnameInput)
-    elems = []
-    faces = []
-    nBGroups = []
+def getB2E(fnameInput, toOutput):
+    Mesh = readgri(fnameInput)
+    E = Mesh['E']
+    B = Mesh['B']
+    output = np.array([[]], dtype=int)
+    iElem = len(E)
+    for ibGroup, bGroup in enumerate(B):
+        for nb in bGroup:
+            for i, ne in enumerate(np.isin(E, nb)):
+                if np.count_nonzero(ne == True) == 2:
+                    iElem = i
+                    break
+            node1 = nb[0]
+            node2 = nb[1]
+            elem = E[iElem]
+            inode1 = np.where(elem == node1)[0][0]
+            inode2 = np.where(elem == node2)[0][0]
+            iface = 3 - inode1 - inode2
 
-    for ib, nb in enumerate(NB):
-        iElem = np.where(np.isin(NE, nb).all(axis=1))
-        node1 = nb[0]
-        node2 = nb[1]
-        elem = NE[iElem]
-        inode1 = np.where(elem, node1)
-        inode2 = np.where(elem, node2)
-        iface = 3 - inode1 - inode2
+            newB = np.array([[int(iElem + 1), int(iface + 1), int(ibGroup + 1)]])
+            if output.size == 0:
+                output = newB
+            else:
+                output = np.append(output, newB, axis=0)
 
-        elems.append(elem)
-        faces.append(iface)
-        nBGroups.append(NBName[ib])
+    if toOutput:
+        with open('B2E.txt', 'w') as f:
+            for i in range(len(output)):
+                f.write(f'{int(output[i][0])} {int(output[i][1])} {int(output[i][2])}\n')
+            f.close()
 
-    output = np.zeros([len(elems), 3])
-    with open('B2E.txt', 'w') as f:
-        for i in range(len(elems)):
-            f.write(f'{int(elems[i])} {int(faces[i])} {int(nBGroups[i])}\n')
-            output[i][0] = elems[i]
-            output[i][1] = faces[i]
-            output[i][2] = nBGroups[i]
-        f.close()
     return output
 
 
-def edgehash(fnameInput, fnameOutput):
-    nodes, NE, NB, NBName = readgri(fnameInput)
-    I2E = getI2E(fnameInput, fnameOutput)
-    B2E = getB2E(fnameInput)
-    In = []
-    Bn = []
-    faces = []
-    lIn = []
-    lBn = []
-    with open('In.txt', 'w') as f:
-        for iface, face in enumerate(I2E):
-            elemL = face[0]
-            faceL = face[1]
-            elemR = face[2]
-            faceR = face[3]
-            if faceL == 0:
-                node1 = 1
-                node2 = 2
-            elif faceL == 1:
-                node1 = 2
-                node2 = 0
-            else:
-                node1 = 0
-                node2 = 1
-            node1Global = NE[elemL][node1]
-            node2Global = NE[elemL][node2]
-            node1c = nodes[node1Global]
-            node2c = nodes[node2Global]
-            l = np.sqrt((node2c[0] - node1c[0]) ** 2 + (node2c[1] - node2c[0]) ** 2)
-            n = np.array([(node2c[1] - node1c[1]) / l, -(node2c[0] - node1c[0]) / l])
-            In.append(n)
-            lIn.append(l)
-            f.write(f'{n[0]} {n[1]}\n')
+def edgehash(fnameInput, toOutput):
+    Mesh = readgri(fnameInput)
+    E = Mesh['E']
+    V = Mesh['V']
+    I2E = getI2E(fnameInput, False)
+    B2E = getB2E(fnameInput, False)
+    In = np.array([[]])
+    Bn = np.array([[]])
+    lIn = np.array([])
+    lBn = np.array([])
 
-    with open(f'Bn.txt', 'w') as f:
-        for iface, face in enumerate(B2E):
-            elem = face[0]
-            face = face[1]
-            if face == 0:
-                node1 = 1
-                node2 = 2
-            elif face == 1:
-                node1 = 2
-                node2 = 0
-            else:
-                node1 = 0
-                node2 = 1
-            node1Global = NE[elem][node1]
-            node2Global = NE[elem][node2]
-            node1c = nodes[node1Global]
-            node2c = nodes[node2Global]
-            l = np.sqrt((node2c[0] - node1c[0]) ** 2 + (node2c[1] - node2c[0]) ** 2)
-            n = np.array([(node2c[1] - node1c[1]) / l, -(node2c[0] - node1c[0]) / l])
-            Bn.append(n)
-            lBn.append(l)
-            f.write(f'{n[0]} {n[1]}\n')
+    for iface, face in enumerate(I2E):
+        elemL = face[0]
+        faceL = face[1]
+        if faceL == 1:
+            node1 = 1
+            node2 = 2
+        elif faceL == 2:
+            node1 = 2
+            node2 = 0
+        else:
+            node1 = 0
+            node2 = 1
+        node1Global = E[elemL - 1][node1]
+        node2Global = E[elemL - 1][node2]
+        node1c = V[node1Global - 1]
+        node2c = V[node2Global - 1]
+        l = np.sqrt((node2c[0] - node1c[0]) ** 2 + (node2c[1] - node1c[1]) ** 2)
+        n = np.array([[(node2c[1] - node1c[1]) / l, -(node2c[0] - node1c[0]) / l]])
+        if In.size == 0:
+            In = n
+        else:
+            In = np.append(In, n, axis=0)
+        lIn = np.append(lIn, l)
+
+        if toOutput:
+            with open('In.txt', 'w') as f:
+                for Ini in In:
+                    f.write(f'{Ini[0]} {Ini[1]}\n')
+            f.close()
+
+    for iface, face in enumerate(B2E):
+        elem = face[0]
+        faceLocal = face[1]
+        if faceLocal == 1:
+            node1 = 1
+            node2 = 2
+        elif faceLocal == 2:
+            node1 = 2
+            node2 = 0
+        else:
+            node1 = 0
+            node2 = 1
+        node1Global = E[elem - 1][node1]
+        node2Global = E[elem - 1][node2]
+        node1c = V[node1Global - 1]
+        node2c = V[node2Global - 1]
+        l = np.sqrt((node2c[0] - node1c[0]) ** 2 + (node2c[1] - node1c[1]) ** 2)
+        n = np.array([[(node2c[1] - node1c[1]) / l, -(node2c[0] - node1c[0]) / l]])
+        if Bn.size == 0:
+            Bn = n
+        else:
+            Bn = np.append(Bn, n, axis=0)
+        lBn = np.append(lBn, l)
+
+        if toOutput:
+            with open('Bn.txt', 'w') as f:
+                for Bni in Bn:
+                    f.write(f'{Bni[0]} {Bni[1]}\n')
+            f.close()
 
     return In, Bn, lIn, lBn
 
 
 # input: element matrix, node coordinate matrix
 # output: element area matrix (index = element index)
-def area(fnameInput, fnameOutput):
-    nodes, NE, NB, NBName = readgri(fnameInput)
-    with open(fnameOutput, 'w') as f:
-        for i, ne in enumerate(NE):
-            coor0 = nodes[int(ne[0]) - 1]
-            coor1 = nodes[int(ne[1]) - 1]
-            coor2 = nodes[int(ne[2]) - 1]
-            area = 1 / 2 * (coor0[0] * (coor1[1] - coor2[1]) + coor1[0] * (coor2[1] - coor0[1]) + coor2[0] * (
+def area(fnameInput, toOutput):
+    Mesh = readgri(fnameInput)
+    E = Mesh['E']
+    V = Mesh['V']
+
+    areas = np.zeros(len(E))
+    for i, ne in enumerate(E):
+        coor0 = V[int(ne[0]) - 1]
+        coor1 = V[int(ne[1]) - 1]
+        coor2 = V[int(ne[2]) - 1]
+        areas[i] = 1 / 2 * (coor0[0] * (coor1[1] - coor2[1]) + coor1[0] * (coor2[1] - coor0[1]) + coor2[0] * (
                     coor0[1] - coor1[1]))
-            f.write(f'area\n')
+
+    if toOutput:
+        with open('area.txt', 'w') as f:
+            for areai in areas:
+                f.write(f'{areai}\n')
+        f.close()
 
 
 def main():
-    getI2E('all.gri', 'I2E.txt')
-    # B2E('all.gri', 'B2E.txt')
+    getI2E('test.gri', True)
+    getB2E('test.gri', True)
+    edgehash('test.gri', True)
+    area('test.gri', True)
 
 
 if __name__ == "__main__":

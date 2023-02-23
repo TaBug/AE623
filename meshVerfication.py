@@ -1,32 +1,33 @@
 import numpy as np
-from matricesGenerator import readgri, I2E, B2E, edgehash, area
+from plotgri import readgri
+from matricesGenerator import getI2E, getB2E, edgehash, area
 
 
 def meshTest(griFile):
-    nodes, NE, NB, NBName = readgri(griFile)
-    I2E = I2E('griFile')
-    B2E = B2E('griFile')
-    In, Bn, lIn, lBn = edgehash('griFile')
-    EI = np.zeros(len(NE))
-    for i, face in enumerate(I2E):
-        elemL = face[0]
-        faceL = face[1]
-        elemR = face[2]
-        faceR = face[3]
-        EI[elemL] += In[i] * lIn[i]
-        EI[elemR] -= In[i] * lIn[i]
+    Mesh = readgri(griFile)
+    E = Mesh['E']
+    I2E = getI2E(griFile, False)
+    B2E = getB2E(griFile, False)
+    In, Bn, lIn, lBn = edgehash(griFile, False)
+    Error = np.zeros([len(E), 2])
+    for i in range(len(In)):
+        elemL = I2E[i][0] - 1
+        elemR = I2E[i][2] - 1
+        Error[elemL] += In[i] * lIn[i]
+        Error[elemR] -= In[i] * lIn[i]
 
-    EB = np.zeros(len(NE))
-    for i, face in enumerate(I2E):
-        elemL = face[0]
-        faceL = face[1]
-        elemR = face[2]
-        faceR = face[3]
-        EI[elemL] += In[i] * lIn[i]
-        EI[elemR] -= In[i] * lIn[i]
-    return [EI, EB]
+    for i in range(len(Bn)):
+        elem = B2E[i][0] - 1
+        Error[elem] += Bn[i] * lBn[i]
+    return Error
 
 
 def main():
-    EmaxTest = max(abs(meshTest('test.gri')))
-    EmaxAll = max(abs(meshTest('all.gri')))
+    Etest = meshTest('test.gri')
+    print(f'The maximum magnitude of the error for test mesh = {np.max(abs(Etest))}')
+    Eall = meshTest('all.gri')
+    print(f'The maximum magnitude of the error for coarse mesh = {np.max(abs(Eall))}')
+
+
+if __name__ == "__main__":
+    main()

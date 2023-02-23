@@ -65,7 +65,3 @@ def txt2geo(main, flap, slat):
         f.write("Mesh 2;")
 
         f.close()
-
-
-if __name__ == "__main__":
-    txt2geo()

@@ -37,7 +37,7 @@ def msh2gri(fnameInput, fnameOutput):
         index = iElements + 2 + numPoints * 2
         for i in range(numCurves):
             entityDim, entityTag, elementType, numElementsInBlock = map(int, lines[index].strip().split())
-            f.write(f"{numElementsInBlock} 1 Boundary{i+1}\n")
+            f.write(f"{numElementsInBlock} 2 {i+1}\n")
             for j in range(numElementsInBlock):
                 index += 1
                 elementTag, node1, node2 = map(int, lines[index].strip().split())
@@ -61,4 +61,4 @@ def msh2gri(fnameInput, fnameOutput):
 
 
 if __name__ == "__main__":
-    msh2gri('../Q1/all.msh', 'all.gri')
+    msh2gri('all.msh', 'all.gri')

@@ -50,7 +50,7 @@ def plotmesh(Mesh, fname):
 
 # -----------------------------------------------------------
 def main():
-    Mesh = readgri('all.gri')
+    Mesh = readgri('test.gri')
     plotmesh(Mesh, []);
 
 
