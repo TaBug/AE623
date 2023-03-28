@@ -50,8 +50,8 @@ def plotmesh(Mesh, fname):
 
 # -----------------------------------------------------------
 def main():
-    Mesh = readgri('test.gri')
-    plotmesh(Mesh, []);
+    plotmesh(readgri('all.gri'), []);
+    plotmesh(readgri('allLocalRefined.gri'), []);
 
 
 if __name__ == "__main__":

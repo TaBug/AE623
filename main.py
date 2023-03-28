@@ -1,7 +1,7 @@
 import numpy as np
 from txt2geo import txt2geo
 from msh2gri import msh2gri
-from matricesGenerator import I2E, B2E, edgehash, area
+from matricesGenerator import getI2E, getB2E, edgehash, area
 
 
 def main():
@@ -15,7 +15,7 @@ def main():
     # after generating mesh file from Gmsh, convert the .msh to .gri
     msh2gri('all.msh', 'all.gri')
     # generate the matrices from .gri
-    I2E('all.gri')
+    getI2E('all.gri', True)
 
 
 if __name__ == "__main__":

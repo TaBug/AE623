@@ -1,21 +1,21 @@
 import numpy as np
 
 
-def txt2geo(main, flap, slat):
+def txt2geo(maintxt, flap, slat):
     # Open the output .geo file
     with open("all.geo", "w") as f:
         # Write the node coordinates to the .geo file
-        for i, line in enumerate(main):
-            x = main[i][0]
-            y = main[i][1]
+        for i, line in enumerate(maintxt):
+            x = maintxt[i][0]
+            y = maintxt[i][1]
             f.write(f"Point({i + 1}) = {{{x}, {y}, 0}};\n")
         for i, line in enumerate(flap):
-            index = i + len(main)
+            index = i + len(maintxt)
             x = flap[i][0]
             y = flap[i][1]
             f.write(f"Point({index + 1}) = {{{x}, {y}, 0}};\n")
         for i, line in enumerate(slat):
-            index = i + len(main) + len(flap)
+            index = i + len(maintxt) + len(flap)
             x = slat[i][0]
             y = slat[i][1]
             f.write(f"Point({index + 1}) = {{{x}, {y}, 0}};\n")
@@ -23,29 +23,29 @@ def txt2geo(main, flap, slat):
         # Write the instructions for connecting the nodes to form a triangular mesh
         counter = 1
         resFactor = 5
-        for i in range(1, len(main) - resFactor, resFactor):
+        for i in range(1, len(maintxt) - resFactor, resFactor):
             f.write(f"Line({counter}) = {{{i}, {i + resFactor}}};\n")
             counter += 1
             i -= 1
-        f.write(f"Line({counter}) = {{{len(main) - resFactor}, {1}}};\n")
+        f.write(f"Line({counter}) = {{{len(maintxt) - resFactor}, {1}}};\n")
         counter += 1
         for i in range(1, len(flap) - resFactor, resFactor):
-            index = i + len(main)
+            index = i + len(maintxt)
             f.write(f"Line({counter}) = {{{index}, {index + resFactor}}};\n")
             counter += 1
             i -= 1
-        f.write(f"Line({counter}) = {{{len(main) + len(flap) - resFactor}, {len(main) + 1}}};\n")
+        f.write(f"Line({counter}) = {{{len(maintxt) + len(flap) - resFactor}, {len(maintxt) + 1}}};\n")
         counter += 1
         for i in range(1, len(slat) - resFactor, resFactor):
-            index = i + len(main) + len(flap)
+            index = i + len(maintxt) + len(flap)
             f.write(f"Line({counter}) = {{{index}, {index + resFactor}}};\n")
             counter += 1
             i -= 1
         f.write(
-            f"Line({counter}) = {{{len(main) + len(flap) + len(slat) - resFactor}, {len(main) + len(slat) + 1}}};\n")
+            f"Line({counter}) = {{{len(maintxt) + len(flap) + len(slat) - resFactor}, {len(maintxt) + len(slat) + 1}}};\n")
 
         boxSize = 100
-        Nnodes = len(main) + len(flap) + len(slat)
+        Nnodes = len(maintxt) + len(flap) + len(slat)
         f.write(f"Point({Nnodes + 1}) = {{{-boxSize}, {-boxSize}, 0}};\n")
         f.write(f"Point({Nnodes + 2}) = {{{boxSize}, {-boxSize}, 0}};\n")
         f.write(f"Point({Nnodes + 3}) = {{{boxSize}, {boxSize}, 0}};\n")
@@ -65,3 +65,14 @@ def txt2geo(main, flap, slat):
         f.write("Mesh 2;")
 
         f.close()
+
+
+def main():
+    maintxt = np.loadtxt('main.txt')
+    slat = np.loadtxt('slat.txt')
+    flap = np.loadtxt('flap.txt')
+    txt2geo(maintxt, flap, slat)
+
+
+if __name__ == "__main__":
+    main()
