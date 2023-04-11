@@ -8,19 +8,19 @@ def readgri(fname):
     V = np.array([[float(s) for s in f.readline().split()] for n in range(Nn)])
     # read boundaries
     NB = int(f.readline())
-    B = [];
+    B = []
     Bname = []
     for i in range(NB):
-        s = f.readline().split();
-        Nb = int(s[0]);
+        s = f.readline().split()
+        Nb = int(s[0])
         Bname.append(s[2])
         Bi = np.array([[int(s) for s in f.readline().split()] for n in range(Nb)])
         B.append(Bi)
     # read elements
-    Ne0 = 0;
+    Ne0 = 0
     E = []
-    while (Ne0 < Ne):
-        s = f.readline().split();
+    while Ne0 < Ne:
+        s = f.readline().split()
         ne = int(s[0])
         Ei = np.array([[int(s) for s in f.readline().split()] for n in range(ne)])
         E = Ei if (Ne0 == 0) else np.concatenate((E, Ei), axis=0)
@@ -30,6 +30,29 @@ def readgri(fname):
     return Mesh
 
 
+def genGri(fnameOutput, V, E, B):
+    f = open(fnameOutput, 'w')
+    nNode = len(V)
+    nElemTot = len(E)
+    f.write(f"{nNode} {nElemTot} 2\n")
+    # node coordinates
+    for node in V:
+        f.write(f"{node[0]} {node[1]}\n")
+    f.write(f"{len(B)}\n")
+
+    # boundary faces
+    for i, bGroup in enumerate(B):
+        f.write(f"{len(bGroup)} 2 {i}\n")
+        for j, bFace in enumerate(bGroup):
+            f.write(f"{bFace[0]} {bFace[1]}\n")
+
+    # elements
+    f.write(f"{len(E)} 1 TriLagrange\n")
+    for i, elem in enumerate(E):
+        f.write(f"{elem[0]} {elem[1]} {elem[2]}\n")
+
+
+# map from interior faces to elements
 def getI2E(fnameInput, toOutput):
     Mesh = readgri(fnameInput)
     E = Mesh['E']
@@ -200,7 +223,7 @@ def area(fnameInput, toOutput):
         coor1 = V[int(ne[1]) - 1]
         coor2 = V[int(ne[2]) - 1]
         areas[i] = 1 / 2 * (coor0[0] * (coor1[1] - coor2[1]) + coor1[0] * (coor2[1] - coor0[1]) + coor2[0] * (
-                    coor0[1] - coor1[1]))
+                coor0[1] - coor1[1]))
 
     if toOutput:
         with open('area.txt', 'w') as f:
@@ -209,11 +232,58 @@ def area(fnameInput, toOutput):
         f.close()
 
 
+def getF2V(fnameInput, toOutput):
+    # read fnameInput
+    mesh = readgri(fnameInput)
+    E = mesh['E']
+    V = mesh['V']
+    B = mesh['B']
+    Bname = mesh['Bname']
+
+    # get interior and boundary face mapping matrices
+    I2E = getI2E(fnameInput, False)
+    B2E = getB2E(fnameInput, False)
+
+    output = np.array([[]], dtype=int)
+    # loop through interior faces
+    for i, face in enumerate(I2E):
+        elemL = face[0]
+        faceL = face[1]
+        node1 = E[elemL - 1][(faceL + 1) % 3 - 1]
+        node2 = E[elemL - 1][(faceL - 1) % 3 - 1]
+        newFace = np.array([[node1, node2]])
+        if output.size == 0:
+            output = newFace
+        else:
+            output = np.append(output, newFace, axis=0)
+
+    # loop through boundary faces
+    for i, face in enumerate(B2E):
+        elem = face[0]
+        face = face[1]
+        node1 = E[elem - 1][(face + 1) % 3 - 1]
+        node2 = E[elem - 1][(face - 1) % 3 - 1]
+        newFace = np.array([[node1, node2]])
+        if output.size == 0:
+            output = newFace
+        else:
+            output = np.append(output, newFace, axis=0)
+
+    if toOutput:
+        with open('F2V.txt', 'w') as f:
+            for face in output:
+                f.write(f'{face[0]} {face[1]}\n')
+        f.close()
+
+    return output
+
+
 def main():
-    getI2E('test.gri', True)
-    getB2E('test.gri', True)
-    edgehash('test.gri', True)
-    area('test.gri', True)
+    # getI2E('all.gri', True)
+    # getB2E('all.gri', True)
+    # edgehash('test.gri', False)
+    # area('test.gri', False)
+    getF2V('test.gri', True)
 
 
 if __name__ == "__main__":

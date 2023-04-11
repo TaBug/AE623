@@ -51,7 +51,9 @@ def plotmesh(Mesh, fname):
 # -----------------------------------------------------------
 def main():
     plotmesh(readgri('all.gri'), []);
-    plotmesh(readgri('allLocalRefined.gri'), []);
+    #plotmesh(readgri('localRefined.gri'), []);
+    #plotmesh(readgri('allLocalRefined.gri'), []);
+    plotmesh(readgri('uniformRefinedAll.gri'), []);
 
 
 if __name__ == "__main__":
