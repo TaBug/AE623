@@ -39,6 +39,7 @@ def plotmesh(Mesh, fname):
     f = plt.figure(figsize=(12, 12))
     # plt.tripcolor(V[:,0], V[:,1], triangles=E)
     plt.triplot(V[:, 0], V[:, 1], E, 'k-')
+    plt.scatter(V[:, 0], V[:, 1], c='red', marker='o', s=2)
     dosave = not not fname
     plt.axis('equal')
     plt.tick_params(axis='both', labelsize=12)
@@ -50,9 +51,13 @@ def plotmesh(Mesh, fname):
 
 # -----------------------------------------------------------
 def main():
-    plotmesh(readgri('all.gri'), []);
-    #plotmesh(readgri('localRefined.gri'), []);
-    #plotmesh(readgri('allLocalRefined.gri'), []);
+    #plotmesh(readgri('test.gri'), [])
+    #plotmesh(readgri('all.gri'), []);
+    #plotmesh(readgri('localRefinedAllTrail.gri'), []);
+    plotmesh(readgri('localSmoothedAllTrail.gri'), []);
+    plotmesh(readgri('localRefinedAll.gri'), []);
+    plotmesh(readgri('localSmoothedAll.gri'), []);
+    #plotmesh(readgri('shitSmoothed.gri'), []);
     plotmesh(readgri('uniformRefinedAll.gri'), []);
 
 

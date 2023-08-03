@@ -42,7 +42,7 @@ def genGri(fnameOutput, V, E, B):
 
     # boundary faces
     for i, bGroup in enumerate(B):
-        f.write(f"{len(bGroup)} 2 {i}\n")
+        f.write(f"{len(bGroup)} 2 {i + 1}\n")
         for j, bFace in enumerate(bGroup):
             f.write(f"{bFace[0]} {bFace[1]}\n")
 
@@ -114,9 +114,14 @@ def getB2E(fnameInput, toOutput):
                 if np.count_nonzero(ne == True) == 2:
                     iElem = i
                     break
+            # iElem = np.where(np.any(E == nb, axis=1))
             node1 = nb[0]
             node2 = nb[1]
             elem = E[iElem]
+
+            if np.where(elem == node1)[0].size == 0 or np.where(elem == node2)[0].size == 0:
+                print(f'At least one node of boundary does not exist (element = {iElem + 1}, bgroup = {ibGroup + 1})')
+
             inode1 = np.where(elem == node1)[0][0]
             inode2 = np.where(elem == node2)[0][0]
             iface = 3 - inode1 - inode2
@@ -236,9 +241,6 @@ def getF2V(fnameInput, toOutput):
     # read fnameInput
     mesh = readgri(fnameInput)
     E = mesh['E']
-    V = mesh['V']
-    B = mesh['B']
-    Bname = mesh['Bname']
 
     # get interior and boundary face mapping matrices
     I2E = getI2E(fnameInput, False)
@@ -279,11 +281,12 @@ def getF2V(fnameInput, toOutput):
 
 
 def main():
-    # getI2E('all.gri', True)
-    # getB2E('all.gri', True)
+    getI2E('localSmoothedAllTrail.gri', True)
+    getB2E('localRefinedAll.gri', True)
     # edgehash('test.gri', False)
     # area('test.gri', False)
-    getF2V('test.gri', True)
+    #getF2V('localRefinedAllTrail.gri', True)
+    print(len(readgri('localRefinedAll.gri')['E']))
 
 
 if __name__ == "__main__":

@@ -23,10 +23,14 @@ def meshTest(griFile):
 
 
 def main():
-    Etest = meshTest('test.gri')
-    print(f'The maximum magnitude of the error for test mesh = {np.max(abs(Etest))}')
-    Eall = meshTest('all.gri')
-    print(f'The maximum magnitude of the error for coarse mesh = {np.max(abs(Eall))}')
+    ETest = meshTest('test.gri')
+    print(f'The maximum magnitude of the error for test mesh = {np.max(abs(ETest))}')
+    EAll = meshTest('all.gri')
+    print(f'The maximum magnitude of the error for coarse mesh = {np.max(abs(EAll))}')
+    EAllTrail = meshTest('localSmoothedAllTrail.gri')
+    print(f'The maximum magnitude of the error for coarse mesh = {np.max(abs(EAllTrail))}')
+    EAllAll = meshTest('localRefinedAll.gri')
+    print(f'The maximum magnitude of the error for coarse mesh = {np.max(abs(EAllAll))}')
 
 
 if __name__ == "__main__":

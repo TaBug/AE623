@@ -69,8 +69,8 @@ def txt2geo(maintxt, flap, slat):
 
 def main():
     maintxt = np.loadtxt('main.txt')
-    slat = np.loadtxt('slat.txt')
-    flap = np.loadtxt('flap.txt')
+    slat = np.loadtxt('flap.txt')
+    flap = np.loadtxt('slat.txt')
     txt2geo(maintxt, flap, slat)
 
 

@@ -4,12 +4,18 @@ Created on Sun Jan 22 20:47:46 2023
 
 @author: liton
 """
+import numpy as np
 
 
 def msh2gri(fnameInput, fnameOutput):
     # input file
     with open(fnameInput, "r") as f:
         lines = f.readlines()
+
+    maintxt = np.loadtxt('main.txt')
+    slat = np.loadtxt('flap.txt')
+    flap = np.loadtxt('slat.txt')
+    refactor = 5
 
     # output .gri file
     with open(fnameOutput, "w") as f:
@@ -32,17 +38,22 @@ def msh2gri(fnameInput, fnameOutput):
             index += 1
 
         # Boundaries
-        nBGroup = numCurves
+        nBGroup = 7
         f.write(f'{nBGroup}\n')
         index = iElements + 2 + numPoints * 2
-        for i in range(numCurves):
-            entityDim, entityTag, elementType, numElementsInBlock = map(int, lines[index].strip().split())
-            f.write(f"{numElementsInBlock} 2 {i+1}\n")
-            for j in range(numElementsInBlock):
+        lengths = [int(len(maintxt)/refactor), int(len(flap)/refactor), int(len(slat)/refactor), 5, 5, 5, 5]
+        tags = ['main', 'flap', 'slat', 'bot', 'right', 'top', 'left']
+        for i in range(nBGroup):
+            f.write(f"{lengths[i]} 2 {tags[i]}\n")
+            for j in range(lengths[i]):
                 index += 1
                 elementTag, node1, node2 = map(int, lines[index].strip().split())
                 f.write(f"{node1} {node2}\n")
-            index += 1
+                if i < 3:
+                    index += 1
+            if i > 2:
+                index += 1
+
 
         # Elements
         nElemGroup = 1
